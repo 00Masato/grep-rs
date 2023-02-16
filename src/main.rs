@@ -59,7 +59,7 @@ fn main() -> io::Result<()> {
         for (index, line) in reader.lines().enumerate() {
             let line = line.unwrap();
             if line.contains(search_txt) {
-                println!("{}: {}", index, line);
+                println!("{}: {}", index + 1, line);
             }
         }
         Ok(())
@@ -73,7 +73,7 @@ fn main() -> io::Result<()> {
             for (index, line) in reader.lines().enumerate() {
                 let line = line.unwrap();
                 if line.contains(search_txt) {
-                    println!("{}: {}", index, line);
+                    println!("{}: {}", index + 1, line);
                 }
             }
         }
