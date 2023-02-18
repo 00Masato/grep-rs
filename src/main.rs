@@ -1,7 +1,7 @@
 use std::fs::{DirEntry, File};
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader};
 use std::path::Path;
-use std::{env, fs, io, process};
+use std::{fs, io, process};
 
 use clap::Parser;
 
@@ -23,7 +23,7 @@ impl TargetDir {
         let children = Box::new(fs::read_dir(&path)?.filter_map(|e| {
             let e = e.ok()?;
             if e.file_type().ok()?.is_dir() {
-                return Some(TargetDir::new(e.path()).ok()?);
+                return TargetDir::new(e.path()).ok();
             }
             None
         }));
@@ -33,7 +33,7 @@ impl TargetDir {
     fn entries(self) -> Box<dyn Iterator<Item = io::Result<DirEntry>>> {
         Box::new(
             self.root
-                .chain(self.children.map(|s| s.entries()).flatten()),
+                .chain(self.children.flat_map(|s| s.entries())),
         )
     }
 }
