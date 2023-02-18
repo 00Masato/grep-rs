@@ -3,6 +3,15 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 use std::{env, fs, io, process};
 
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    search_word: Option<String>,
+    search_target: Option<String>,
+}
+
 struct TargetDir {
     root: Box<dyn Iterator<Item = io::Result<DirEntry>>>,
     children: Box<dyn Iterator<Item = TargetDir>>,
@@ -46,10 +55,10 @@ impl Iterator for TargetDir {
 }
 
 fn main() -> io::Result<()> {
-    let args: Vec<String> = env::args().collect();
+    let cli = Cli::parse();
 
-    let search_txt = &args[1];
-    let search_target = &args[2];
+    let search_word = cli.search_word.as_deref().expect("'search_word｀ is an invalid argument.");
+    let search_target = cli.search_target.as_deref().expect("'search_word｀ is an invalid argument.");
 
     println!("{}", search_target);
 
@@ -58,7 +67,7 @@ fn main() -> io::Result<()> {
         let reader = BufReader::new(f);
         for (index, line) in reader.lines().enumerate() {
             let line = line.unwrap();
-            if line.contains(search_txt) {
+            if line.contains(search_word) {
                 println!("{}: {}", index + 1, line);
             }
         }
@@ -72,7 +81,7 @@ fn main() -> io::Result<()> {
             let reader = BufReader::new(f);
             for (index, line) in reader.lines().enumerate() {
                 let line = line.unwrap();
-                if line.contains(search_txt) {
+                if line.contains(search_word) {
                     println!("{}: {}", index + 1, line);
                 }
             }
