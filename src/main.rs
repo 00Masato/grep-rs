@@ -1,7 +1,16 @@
 use std::fs::{DirEntry, File};
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader};
 use std::path::Path;
-use std::{env, fs, io, process};
+use std::{fs, io, process};
+
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    search_word: Option<String>,
+    search_target: Option<String>,
+}
 
 struct TargetDir {
     root: Box<dyn Iterator<Item = io::Result<DirEntry>>>,
@@ -11,23 +20,18 @@ struct TargetDir {
 impl TargetDir {
     fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
         let root = Box::new(fs::read_dir(&path)?);
-        let children = Box::new(
-            fs::read_dir(&path)?
-                .filter_map(|e| {
-                    let e = e.ok()?;
-                    if e.file_type().ok()?.is_dir() {
-                        return Some(TargetDir::new(e.path()).ok()?);
-                    }
-                    None
-                })
-        );
+        let children = Box::new(fs::read_dir(&path)?.filter_map(|e| {
+            let e = e.ok()?;
+            if e.file_type().ok()?.is_dir() {
+                return TargetDir::new(e.path()).ok();
+            }
+            None
+        }));
         Ok(TargetDir { root, children })
     }
 
     fn entries(self) -> Box<dyn Iterator<Item = io::Result<DirEntry>>> {
-        Box::new(
-            self.root.chain(self.children.map(|s| s.entries()).flatten()),
-        )
+        Box::new(self.root.chain(self.children.flat_map(|s| s.entries())))
     }
 }
 
@@ -46,10 +50,16 @@ impl Iterator for TargetDir {
 }
 
 fn main() -> io::Result<()> {
-    let args: Vec<String> = env::args().collect();
+    let cli = Cli::parse();
 
-    let search_txt = &args[1];
-    let search_target = &args[2];
+    let search_word = cli
+        .search_word
+        .as_deref()
+        .expect("'search_word｀ is an invalid argument.");
+    let search_target = cli
+        .search_target
+        .as_deref()
+        .expect("'search_word｀ is an invalid argument.");
 
     println!("{}", search_target);
 
@@ -58,7 +68,7 @@ fn main() -> io::Result<()> {
         let reader = BufReader::new(f);
         for (index, line) in reader.lines().enumerate() {
             let line = line.unwrap();
-            if line.contains(search_txt) {
+            if line.contains(search_word) {
                 println!("{}: {}", index + 1, line);
             }
         }
@@ -72,7 +82,7 @@ fn main() -> io::Result<()> {
             let reader = BufReader::new(f);
             for (index, line) in reader.lines().enumerate() {
                 let line = line.unwrap();
-                if line.contains(search_txt) {
+                if line.contains(search_word) {
                     println!("{}: {}", index + 1, line);
                 }
             }
