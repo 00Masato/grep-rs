@@ -20,22 +20,20 @@ struct TargetDir {
 impl TargetDir {
     fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
         let root = Box::new(fs::read_dir(&path)?);
-        let children = Box::new(
-            fs::read_dir(&path)?
-                .filter_map(|e| {
-                    let e = e.ok()?;
-                    if e.file_type().ok()?.is_dir() {
-                        return Some(TargetDir::new(e.path()).ok()?);
-                    }
-                    None
-                })
-        );
+        let children = Box::new(fs::read_dir(&path)?.filter_map(|e| {
+            let e = e.ok()?;
+            if e.file_type().ok()?.is_dir() {
+                return Some(TargetDir::new(e.path()).ok()?);
+            }
+            None
+        }));
         Ok(TargetDir { root, children })
     }
 
     fn entries(self) -> Box<dyn Iterator<Item = io::Result<DirEntry>>> {
         Box::new(
-            self.root.chain(self.children.map(|s| s.entries()).flatten()),
+            self.root
+                .chain(self.children.map(|s| s.entries()).flatten()),
         )
     }
 }
@@ -57,8 +55,14 @@ impl Iterator for TargetDir {
 fn main() -> io::Result<()> {
     let cli = Cli::parse();
 
-    let search_word = cli.search_word.as_deref().expect("'search_word｀ is an invalid argument.");
-    let search_target = cli.search_target.as_deref().expect("'search_word｀ is an invalid argument.");
+    let search_word = cli
+        .search_word
+        .as_deref()
+        .expect("'search_word｀ is an invalid argument.");
+    let search_target = cli
+        .search_target
+        .as_deref()
+        .expect("'search_word｀ is an invalid argument.");
 
     println!("{}", search_target);
 
