@@ -31,10 +31,7 @@ impl TargetDir {
     }
 
     fn entries(self) -> Box<dyn Iterator<Item = io::Result<DirEntry>>> {
-        Box::new(
-            self.root
-                .chain(self.children.flat_map(|s| s.entries())),
-        )
+        Box::new(self.root.chain(self.children.flat_map(|s| s.entries())))
     }
 }
 
