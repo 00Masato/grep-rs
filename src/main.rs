@@ -49,6 +49,19 @@ impl Iterator for TargetDir {
     }
 }
 
+fn search_file(file: PathBuf, word: &str) -> io::Result<()> {
+    let f = File::open(&*file).expect("file not found");
+    let reader = BufReader::new(f);
+    for (index, line) in reader.lines().enumerate() {
+        let line = line.unwrap();
+        if line.contains(word) {
+            println!("{}:{}: {}", file.to_str().unwrap().to_string(), index + 1, line);
+            println!("");
+        }
+    }
+    Ok(())
+}
+
 fn main() -> io::Result<()> {
     let cli = Cli::parse();
 
@@ -64,28 +77,15 @@ fn main() -> io::Result<()> {
     println!("{}", search_target);
 
     if Path::new(search_target).is_file() {
-        let f = File::open(search_target).expect("file not found");
-        let reader = BufReader::new(f);
-        for (index, line) in reader.lines().enumerate() {
-            let line = line.unwrap();
-            if line.contains(search_word) {
-                println!("{}: {}", index + 1, line);
-            }
-        }
+        let search_target = PathBuf::from(search_target);
+        search_file(search_target, search_word);
         Ok(())
     } else if Path::new(search_target).is_dir() {
         let files = TargetDir::new(search_target)?
             .filter_map(|entry| Some(entry.ok()?.path()))
             .collect::<Vec<_>>();
         for file in files {
-            let f = File::open(file).expect("file not found");
-            let reader = BufReader::new(f);
-            for (index, line) in reader.lines().enumerate() {
-                let line = line.unwrap();
-                if line.contains(search_word) {
-                    println!("{}: {}", index + 1, line);
-                }
-            }
+            search_file(file, search_word);
         }
         Ok(())
     } else {
