@@ -72,7 +72,8 @@ fn search_file(file: PathBuf, word: &str, before_context: u8) -> io::Result<Vec<
     for (index, line) in reader.lines().enumerate() {
         let line = line.unwrap();
         if line.contains(word) {
-            let file_parser = FileParser::new(file.to_str().unwrap().to_string(), index, before_context);
+            let file_parser =
+                FileParser::new(file.to_str().unwrap().to_string(), index, before_context);
             file_parsers.push(file_parser);
         }
     }

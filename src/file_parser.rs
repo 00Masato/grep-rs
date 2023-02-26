@@ -36,7 +36,6 @@ impl FileParser {
             }
 
             if i == self.line_num {
-
                 println!("{}:{}:{}", self.file_name, i, line);
             }
         }
