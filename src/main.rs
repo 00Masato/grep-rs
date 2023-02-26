@@ -16,7 +16,7 @@ struct Cli {
     search_target: Option<String>,
 
     /// Print num lines of trailing context after each match.
-    #[arg(short = 'A', long, action = clap::ArgAction::Count)]
+    #[arg(short = 'A', long, default_value_t = 0)]
     after_context: u8,
 
     /// Print num lines of leading context before each match.
@@ -24,7 +24,7 @@ struct Cli {
     before_context: u8,
 
     /// Print num lines of leading and trailing context surrounding each match.
-    #[arg(short = 'C', long, action = clap::ArgAction::Count)]
+    #[arg(short = 'C', long, default_value_t = 0)]
     context: u8,
 }
 
@@ -65,15 +65,24 @@ impl Iterator for TargetDir {
     }
 }
 
-fn search_file(file: PathBuf, word: &str, before_context: u8) -> io::Result<Vec<FileParser>> {
+fn search_file(
+    file: PathBuf,
+    word: &str,
+    before_context: u8,
+    after_context: u8,
+) -> io::Result<Vec<FileParser>> {
     let f = File::open(&*file).expect("file not found");
     let reader = BufReader::new(f);
     let mut file_parsers = Vec::new();
     for (index, line) in reader.lines().enumerate() {
         let line = line.unwrap();
         if line.contains(word) {
-            let file_parser =
-                FileParser::new(file.to_str().unwrap().to_string(), index, before_context);
+            let file_parser = FileParser::new(
+                file.to_str().unwrap().to_string(),
+                index,
+                before_context,
+                after_context,
+            );
             file_parsers.push(file_parser);
         }
     }
@@ -99,7 +108,7 @@ fn main() {
 
     if Path::new(search_target).is_file() {
         let search_target = PathBuf::from(search_target);
-        search_result = search_file(search_target, search_word, before_context);
+        search_result = search_file(search_target, search_word, before_context, after_context);
 
         for file_parser in search_result.unwrap() {
             file_parser.parse(before_context, after_context, context);
@@ -110,7 +119,7 @@ fn main() {
             .filter_map(|entry| Some(entry.ok()?.path()))
             .collect::<Vec<_>>();
         for file in files {
-            search_result = search_file(file, search_word, before_context);
+            search_result = search_file(file, search_word, before_context, after_context);
 
             for file_parser in search_result.unwrap() {
                 file_parser.parse(before_context, after_context, context);
