@@ -1,15 +1,31 @@
+mod file_parser;
+
 use std::fs::{DirEntry, File};
 use std::io::{BufRead, BufReader};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{fs, io, process};
 
 use clap::Parser;
+
+use crate::file_parser::FileParser;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
     search_word: Option<String>,
     search_target: Option<String>,
+
+    /// Print num lines of trailing context after each match.
+    #[arg(short = 'A', long, action = clap::ArgAction::Count)]
+    after_context: u8,
+
+    /// Print num lines of leading context before each match.
+    #[arg(short = 'B', long, default_value_t = 0)]
+    before_context: u8,
+
+    /// Print num lines of leading and trailing context surrounding each match.
+    #[arg(short = 'C', long, action = clap::ArgAction::Count)]
+    context: u8,
 }
 
 struct TargetDir {
@@ -49,7 +65,22 @@ impl Iterator for TargetDir {
     }
 }
 
-fn main() -> io::Result<()> {
+fn search_file(file: PathBuf, word: &str, before_context: u8) -> io::Result<Vec<FileParser>> {
+    let f = File::open(&*file).expect("file not found");
+    let reader = BufReader::new(f);
+    let mut file_parsers = Vec::new();
+    for (index, line) in reader.lines().enumerate() {
+        let line = line.unwrap();
+        if line.contains(word) {
+            let file_parser =
+                FileParser::new(file.to_str().unwrap().to_string(), index, before_context);
+            file_parsers.push(file_parser);
+        }
+    }
+    Ok(file_parsers)
+}
+
+fn main() {
     let cli = Cli::parse();
 
     let search_word = cli
@@ -61,33 +92,30 @@ fn main() -> io::Result<()> {
         .as_deref()
         .expect("'search_word｀ is an invalid argument.");
 
-    println!("{}", search_target);
+    let after_context = cli.after_context;
+    let before_context = cli.before_context;
+    let context = cli.context;
+    let mut search_result;
 
     if Path::new(search_target).is_file() {
-        let f = File::open(search_target).expect("file not found");
-        let reader = BufReader::new(f);
-        for (index, line) in reader.lines().enumerate() {
-            let line = line.unwrap();
-            if line.contains(search_word) {
-                println!("{}: {}", index + 1, line);
-            }
+        let search_target = PathBuf::from(search_target);
+        search_result = search_file(search_target, search_word, before_context);
+
+        for file_parser in search_result.unwrap() {
+            file_parser.parse(before_context, after_context, context);
         }
-        Ok(())
     } else if Path::new(search_target).is_dir() {
-        let files = TargetDir::new(search_target)?
+        let files = TargetDir::new(search_target)
+            .unwrap()
             .filter_map(|entry| Some(entry.ok()?.path()))
             .collect::<Vec<_>>();
         for file in files {
-            let f = File::open(file).expect("file not found");
-            let reader = BufReader::new(f);
-            for (index, line) in reader.lines().enumerate() {
-                let line = line.unwrap();
-                if line.contains(search_word) {
-                    println!("{}: {}", index + 1, line);
-                }
+            search_result = search_file(file, search_word, before_context);
+
+            for file_parser in search_result.unwrap() {
+                file_parser.parse(before_context, after_context, context);
             }
         }
-        Ok(())
     } else {
         eprintln!("search target `{}` is not correct!", search_target);
         process::exit(1);
