@@ -70,6 +70,7 @@ fn search_file(
     word: &str,
     before_context: u8,
     after_context: u8,
+    context: u8,
 ) -> io::Result<Vec<FileParser>> {
     let f = File::open(&*file).expect("file not found");
     let reader = BufReader::new(f);
@@ -82,6 +83,7 @@ fn search_file(
                 index,
                 before_context,
                 after_context,
+                context,
             );
             file_parsers.push(file_parser);
         }
@@ -108,7 +110,13 @@ fn main() {
 
     if Path::new(search_target).is_file() {
         let search_target = PathBuf::from(search_target);
-        search_result = search_file(search_target, search_word, before_context, after_context);
+        search_result = search_file(
+            search_target,
+            search_word,
+            before_context,
+            after_context,
+            context,
+        );
 
         for file_parser in search_result.unwrap() {
             file_parser.parse(before_context, after_context, context);
@@ -119,7 +127,7 @@ fn main() {
             .filter_map(|entry| Some(entry.ok()?.path()))
             .collect::<Vec<_>>();
         for file in files {
-            search_result = search_file(file, search_word, before_context, after_context);
+            search_result = search_file(file, search_word, before_context, after_context, context);
 
             for file_parser in search_result.unwrap() {
                 file_parser.parse(before_context, after_context, context);
