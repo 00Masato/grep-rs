@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead, BufReader};
 use std::ops::Range;
 
 pub struct FileParser {
@@ -39,11 +39,10 @@ impl FileParser {
         }
     }
 
-    pub fn parse(self, before_context: u8, after_context: u8, context: u8) {
+    pub fn parse(self) {
         let file = File::open(&self.file_name).unwrap();
 
         let reader = BufReader::new(file);
-        let context = usize::from(context);
 
         for (i, line) in reader.lines().enumerate() {
             let line = line.unwrap();

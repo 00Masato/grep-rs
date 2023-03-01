@@ -119,7 +119,7 @@ fn main() {
         );
 
         for file_parser in search_result.unwrap() {
-            file_parser.parse(before_context, after_context, context);
+            file_parser.parse();
         }
     } else if Path::new(search_target).is_dir() {
         let files = TargetDir::new(search_target)
@@ -130,7 +130,7 @@ fn main() {
             search_result = search_file(file, search_word, before_context, after_context, context);
 
             for file_parser in search_result.unwrap() {
-                file_parser.parse(before_context, after_context, context);
+                file_parser.parse();
             }
         }
     } else {
