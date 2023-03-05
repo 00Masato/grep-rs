@@ -48,10 +48,7 @@ impl Iterator for TargetDir {
     }
 }
 
-fn search_file(
-    file: PathBuf,
-    cli: &Cli,
-) -> io::Result<Vec<FileParser>> {
+fn search_file(file: PathBuf, cli: &Cli) -> io::Result<Vec<FileParser>> {
     let search_word = cli
         .search_word
         .as_deref()
