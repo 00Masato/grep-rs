@@ -1,3 +1,4 @@
+mod cli;
 mod file_parser;
 
 use std::fs::{DirEntry, File};
@@ -7,26 +8,8 @@ use std::{fs, io, process};
 
 use clap::Parser;
 
+use crate::cli::Cli;
 use crate::file_parser::FileParser;
-
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-struct Cli {
-    search_word: Option<String>,
-    search_target: Option<String>,
-
-    /// Print num lines of trailing context after each match.
-    #[arg(short = 'A', long, default_value_t = 0)]
-    after_context: u8,
-
-    /// Print num lines of leading context before each match.
-    #[arg(short = 'B', long, default_value_t = 0)]
-    before_context: u8,
-
-    /// Print num lines of leading and trailing context surrounding each match.
-    #[arg(short = 'C', long, default_value_t = 0)]
-    context: u8,
-}
 
 struct TargetDir {
     root: Box<dyn Iterator<Item = io::Result<DirEntry>>>,
