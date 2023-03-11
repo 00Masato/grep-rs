@@ -2,9 +2,8 @@ use std::io::Read;
 use std::process::{Command, Stdio};
 
 const TEXT: &'static str = "\
-tests/data/test_data.txt
-6: How dreary to be somebody!
-7: How public, like a frog
+tests/data/test_data.txt:6:How dreary to be somebody!
+tests/data/test_data.txt:7:How public, like a frog
 ";
 
 const FAILED_MESSAGE: &'static str = "\
