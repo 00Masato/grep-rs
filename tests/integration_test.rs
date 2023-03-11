@@ -108,6 +108,36 @@ fn success_long_before_context_test() {
     assert_eq!(TEXT_FOR_BEFORE_CONTEXT, buffer);
 }
 
+// success
+#[test]
+fn success_short_after_context_test() {
+    let child = Command::new("target/debug/grep-rs")
+        .args(&["-A", "1", "How", "tests/data/test_data.txt"])
+        .stdout(Stdio::piped())
+        .spawn();
+
+    let mut stdout = child.unwrap().stdout.take().unwrap();
+    let mut buffer = String::new();
+    stdout.read_to_string(&mut buffer).unwrap();
+
+    assert_eq!(TEXT_FOR_AFTER_CONTEXT, buffer);
+}
+
+// success
+#[test]
+fn success_long_after_context_test() {
+    let child = Command::new("target/debug/grep-rs")
+        .args(&["--after-context", "1", "How", "tests/data/test_data.txt"])
+        .stdout(Stdio::piped())
+        .spawn();
+
+    let mut stdout = child.unwrap().stdout.take().unwrap();
+    let mut buffer = String::new();
+    stdout.read_to_string(&mut buffer).unwrap();
+
+    assert_eq!(TEXT_FOR_AFTER_CONTEXT, buffer);
+}
+
 // failed(target_file not found)
 #[test]
 fn failed_text_test() {
