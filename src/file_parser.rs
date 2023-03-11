@@ -48,15 +48,15 @@ impl FileParser {
             let line = line.unwrap();
 
             if self.before_context_range.contains(&i) || self.context_range.0.contains(&i) {
-                println!("{}-{}-{}", self.file_name, i, line)
+                println!("{}-{}-{}", self.file_name, i + 1, line)
             }
 
             if i == self.line_num {
-                println!("{}:{}:{}", self.file_name, i, line);
+                println!("{}:{}:{}", self.file_name, i + 1, line);
             }
 
             if self.after_context_range.contains(&i) || self.context_range.1.contains(&i) {
-                println!("{}-{}-{}", self.file_name, i, line)
+                println!("{}-{}-{}", self.file_name, i + 1, line)
             }
         }
     }
