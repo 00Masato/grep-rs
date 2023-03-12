@@ -65,6 +65,7 @@ fn search_file(file: PathBuf, cli: &Cli) -> io::Result<Vec<FileParser>> {
             let file_parser = FileParser::new(
                 file.to_str().unwrap().to_string(),
                 index,
+                search_word.to_string(),
                 before_context,
                 after_context,
                 context,
