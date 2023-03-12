@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::ops::Range;
 
-use crate::search_file;
 use colored::*;
 
 pub struct FileParser {
