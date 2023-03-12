@@ -53,18 +53,20 @@ impl FileParser {
 
         for (i, line) in reader.lines().enumerate() {
             let line = line.unwrap();
+            let line_num = (i + 1).to_string().green();
 
             if self.before_context_range.contains(&i) || self.context_range.0.contains(&i) {
-                println!("{}-{}-{}", self.file_name, i + 1, line)
+                println!("{}-{}-{}", self.file_name, line_num, line)
             }
 
             if i == self.line_num {
+                // TODO: When there are more than two in a row, both should be colored.
                 let divided_line_list = line.split(&self.search_word).collect::<Vec<_>>();
-                println!("{}:{}:{}{}{}", self.file_name, i + 1, divided_line_list[0], self.search_word.red(), divided_line_list[1]);
+                println!("{}:{}:{}{}{}", self.file_name, line_num, divided_line_list[0], self.search_word.red(), divided_line_list[1]);
             }
 
             if self.after_context_range.contains(&i) || self.context_range.1.contains(&i) {
-                println!("{}-{}-{}", self.file_name, i + 1, line)
+                println!("{}-{}-{}", self.file_name, line_num, line)
             }
         }
     }
