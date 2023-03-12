@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::ops::Range;
 
-use colored::*;
 use crate::search_file;
+use colored::*;
 
 pub struct FileParser {
     file_name: String,
@@ -62,7 +62,14 @@ impl FileParser {
             if i == self.line_num {
                 // TODO: When there are more than two in a row, both should be colored.
                 let divided_line_list = line.split(&self.search_word).collect::<Vec<_>>();
-                println!("{}:{}:{}{}{}", self.file_name, line_num, divided_line_list[0], self.search_word.red(), divided_line_list[1]);
+                println!(
+                    "{}:{}:{}{}{}",
+                    self.file_name,
+                    line_num,
+                    divided_line_list[0],
+                    self.search_word.red(),
+                    divided_line_list[1]
+                );
             }
 
             if self.after_context_range.contains(&i) || self.context_range.1.contains(&i) {
